@@ -1,5 +1,3 @@
-'use client';
-
 import { AuthProvider } from '@/context/auth-context';
 
 export default function AuthLayout({
@@ -7,10 +5,6 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
-  );
+  return <AuthProvider>{children}</AuthProvider>;
 }
 

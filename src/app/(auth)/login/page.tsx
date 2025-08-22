@@ -2,52 +2,43 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuthContext } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Form, FormField, FormLabel, FormMessage } from '@/components/ui/form';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { signIn } = useAuthContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuthContext();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get('redirect') || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     setError(null);
-    setIsLoading(true);
 
     try {
       await signIn(email, password);
-      router.push(redirectUrl);
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Failed to sign in');
+      console.error('Login error:', err);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold">EDU-WISE BASIC</h1>
-          <h2 className="mt-6 text-2xl font-bold tracking-tight text-gray-900">
+          <p className="mt-2 text-muted-foreground">
             Sign in to your account
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Or{' '}
-            <Link
-              href="/register"
-              className="font-medium text-primary hover:text-primary/90"
-            >
-              create a new account
-            </Link>
           </p>
         </div>
 
@@ -59,86 +50,50 @@ export default function LoginPage() {
           </div>
         )}
 
-        {searchParams.get('message') && (
-          <div className="rounded-md bg-green-50 p-4">
-            <div className="flex">
-              <div className="text-sm text-green-700">
-                {searchParams.get('message')}
-              </div>
-            </div>
-          </div>
-        )}
+        <Form onSubmit={handleSubmit} className="space-y-6">
+          <FormField>
+            <FormLabel htmlFor="email">Email</FormLabel>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
+          </FormField>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4 rounded-md shadow-sm">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <label
-                htmlFor="remember-me"
-                className="ml-2 block text-sm text-gray-900"
+          <FormField>
+            <div className="flex items-center justify-between">
+              <FormLabel htmlFor="password">Password</FormLabel>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-primary hover:underline"
               >
-                Remember me
-              </label>
+                Forgot password?
+              </Link>
             </div>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
+          </FormField>
 
-            <div className="text-sm">
-              <a
-                href="#"
-                className="font-medium text-primary hover:text-primary/90"
-              >
-                Forgot your password?
-              </a>
-            </div>
-          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Signing in...' : 'Sign in'}
+          </Button>
 
-          <div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </Button>
+          <div className="text-center text-sm">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="text-primary hover:underline">
+              Register
+            </Link>
           </div>
-        </form>
+        </Form>
       </div>
     </div>
   );

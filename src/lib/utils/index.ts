@@ -1,57 +1,68 @@
-import { type ClassValue, clsx } from 'clsx';
+import { ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
+export function formatDate(dateString: string): string {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
-  });
-}
-
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
-}
-
-export function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase();
+  }).format(date);
 }
 
 export function calculateAge(dateOfBirth: string): number {
-  const today = new Date();
-  const birthDate = new Date(dateOfBirth);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
+  if (!dateOfBirth) return 0;
   
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+  const birthDate = new Date(dateOfBirth);
+  const today = new Date();
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+  
+  if (
+    monthDifference < 0 ||
+    (monthDifference === 0 && today.getDate() < birthDate.getDate())
+  ) {
     age--;
   }
   
   return age;
 }
 
-export function calculateGrade(marks: number, maxMarks: number): string {
-  const percentage = (marks / maxMarks) * 100;
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 2,
+  }).format(amount);
+}
+
+export function generateAdmissionNumber(prefix: string = 'ADM', year: number = new Date().getFullYear()): string {
+  const randomNum = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, '0');
+  return `${prefix}${year}${randomNum}`;
+}
+
+export function getInitials(name: string): string {
+  if (!name) return '';
   
-  if (percentage >= 90) return 'A+';
-  if (percentage >= 80) return 'A';
-  if (percentage >= 70) return 'B+';
-  if (percentage >= 60) return 'B';
-  if (percentage >= 50) return 'C+';
-  if (percentage >= 40) return 'C';
-  if (percentage >= 33) return 'D';
-  return 'F';
+  return name
+    .split(' ')
+    .map((part) => part.charAt(0))
+    .join('')
+    .toUpperCase();
+}
+
+export function truncateText(text: string, maxLength: number): string {
+  if (!text || text.length <= maxLength) return text;
+  
+  return text.slice(0, maxLength) + '...';
 }
 

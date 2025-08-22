@@ -1,253 +1,102 @@
-import { useEffect, useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
-type Table = 
-  | 'academic_years'
-  | 'terms'
-  | 'classes'
-  | 'sections'
-  | 'subjects'
-  | 'subject_assignments'
-  | 'students'
-  | 'guardians'
-  | 'employees'
-  | 'attendance'
-  | 'exams'
-  | 'marks'
-  | 'fees'
-  | 'payments';
-
-type Event = 'INSERT' | 'UPDATE' | 'DELETE' | '*';
-
-interface UseRealtimeDataOptions<T> {
-  table: Table;
-  event?: Event;
-  initialData?: T[];
-  filter?: string;
-  filterValue?: string | number;
+interface UseRealtimeDataOptions {
+  table: string;
+  column?: string;
+  value?: string | number;
+  orderBy?: { column: string; ascending?: boolean };
+  limit?: number;
 }
 
 export function useRealtimeData<T>({
   table,
-  event = '*',
-  initialData = [],
-  filter,
-  filterValue,
-}: UseRealtimeDataOptions<T>) {
-  const [data, setData] = useState<T[]>(initialData);
+  column,
+  value,
+  orderBy,
+  limit,
+}: UseRealtimeDataOptions) {
+  const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
-    let channel: RealtimeChannel;
+    let subscription: RealtimeChannel;
 
     const fetchData = async () => {
       try {
         setLoading(true);
+        
         let query = supabase.from(table).select('*');
         
-        if (filter && filterValue !== undefined) {
-          query = query.eq(filter, filterValue);
+        if (column && value !== undefined) {
+          query = query.eq(column, value);
         }
         
-        const { data: fetchedData, error: fetchError } = await query;
-        
-        if (fetchError) {
-          throw fetchError;
+        if (orderBy) {
+          query = query.order(orderBy.column, {
+            ascending: orderBy.ascending ?? true,
+          });
         }
         
-        setData(fetchedData as T[]);
-      } catch (err) {
-        setError(err as Error);
+        if (limit) {
+          query = query.limit(limit);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+          throw error;
+        }
+        
+        setData(data as T[]);
+      } catch (err: any) {
         console.error(`Error fetching data from ${table}:`, err);
+        setError(err);
       } finally {
         setLoading(false);
       }
     };
 
-    const setupSubscription = async () => {
-      channel = supabase
-        .channel(`${table}-changes`)
-        .on(
-          'postgres_changes',
-          {
-            event,
-            schema: 'public',
-            table,
-          },
-          async (payload: RealtimePostgresChangesPayload<T>) => {
-            // Handle different events
-            if (payload.eventType === 'INSERT') {
-              // If there's a filter, check if the new record matches
-              if (filter && filterValue !== undefined) {
-                if ((payload.new as any)[filter] === filterValue) {
-                  setData((currentData) => [...currentData, payload.new]);
-                }
-              } else {
-                setData((currentData) => [...currentData, payload.new]);
-              }
-            } else if (payload.eventType === 'UPDATE') {
-              setData((currentData) =>
-                currentData.map((item) =>
-                  (item as any).id === (payload.new as any).id ? payload.new : item
-                )
-              );
-            } else if (payload.eventType === 'DELETE') {
-              setData((currentData) =>
-                currentData.filter((item) => (item as any).id !== (payload.old as any).id)
-              );
-            }
-          }
-        )
-        .subscribe();
-    };
-
     fetchData();
-    setupSubscription();
+
+    // Set up realtime subscription
+    subscription = supabase
+      .channel(`${table}-changes`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table,
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setData((prev) => [...prev, payload.new as T]);
+          } else if (payload.eventType === 'UPDATE') {
+            setData((prev) =>
+              prev.map((item) =>
+                (item as any).id === payload.new.id ? (payload.new as T) : item
+              )
+            );
+          } else if (payload.eventType === 'DELETE') {
+            setData((prev) =>
+              prev.filter((item) => (item as any).id !== payload.old.id)
+            );
+          }
+        }
+      )
+      .subscribe();
 
     return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      supabase.removeChannel(subscription);
     };
-  }, [table, event, filter, filterValue, supabase]);
+  }, [table, column, value, orderBy, limit, supabase]);
 
-  // Function to add a new item with optimistic update
-  const addItem = async (newItem: Partial<T>) => {
-    try {
-      // Optimistic update
-      const tempId = `temp-${Date.now()}`;
-      const optimisticItem = { ...newItem, id: tempId } as T;
-      
-      setData((currentData) => [...currentData, optimisticItem]);
-      
-      // Actual API call
-      const { data: insertedData, error: insertError } = await supabase
-        .from(table)
-        .insert(newItem)
-        .select()
-        .single();
-      
-      if (insertError) {
-        throw insertError;
-      }
-      
-      // Update with actual data
-      setData((currentData) =>
-        currentData.map((item) =>
-          (item as any).id === tempId ? insertedData : item
-        )
-      );
-      
-      return insertedData;
-    } catch (err) {
-      // Revert optimistic update on error
-      setData((currentData) =>
-        currentData.filter((item) => (item as any).id !== `temp-${Date.now()}`)
-      );
-      
-      setError(err as Error);
-      console.error(`Error adding item to ${table}:`, err);
-      throw err;
-    }
-  };
-
-  // Function to update an item with optimistic update
-  const updateItem = async (id: string, updates: Partial<T>) => {
-    try {
-      // Store original item for rollback
-      const originalItem = data.find((item) => (item as any).id === id);
-      
-      // Optimistic update
-      setData((currentData) =>
-        currentData.map((item) =>
-          (item as any).id === id ? { ...item, ...updates } : item
-        )
-      );
-      
-      // Actual API call
-      const { data: updatedData, error: updateError } = await supabase
-        .from(table)
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (updateError) {
-        throw updateError;
-      }
-      
-      // Update with actual data
-      setData((currentData) =>
-        currentData.map((item) =>
-          (item as any).id === id ? updatedData : item
-        )
-      );
-      
-      return updatedData;
-    } catch (err) {
-      // Revert optimistic update on error
-      const originalItem = data.find((item) => (item as any).id === id);
-      
-      if (originalItem) {
-        setData((currentData) =>
-          currentData.map((item) =>
-            (item as any).id === id ? originalItem : item
-          )
-        );
-      }
-      
-      setError(err as Error);
-      console.error(`Error updating item in ${table}:`, err);
-      throw err;
-    }
-  };
-
-  // Function to delete an item with optimistic update
-  const deleteItem = async (id: string) => {
-    try {
-      // Store original item for rollback
-      const originalItem = data.find((item) => (item as any).id === id);
-      
-      // Optimistic update
-      setData((currentData) =>
-        currentData.filter((item) => (item as any).id !== id)
-      );
-      
-      // Actual API call
-      const { error: deleteError } = await supabase
-        .from(table)
-        .delete()
-        .eq('id', id);
-      
-      if (deleteError) {
-        throw deleteError;
-      }
-      
-      return true;
-    } catch (err) {
-      // Revert optimistic update on error
-      const originalItem = data.find((item) => (item as any).id === id);
-      
-      if (originalItem) {
-        setData((currentData) => [...currentData, originalItem]);
-      }
-      
-      setError(err as Error);
-      console.error(`Error deleting item from ${table}:`, err);
-      throw err;
-    }
-  };
-
-  return {
-    data,
-    loading,
-    error,
-    addItem,
-    updateItem,
-    deleteItem,
-  };
+  return { data, loading, error };
 }
 

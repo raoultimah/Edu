@@ -2,73 +2,73 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
-type UserRole = 'admin' | 'teacher' | 'student' | 'parent' | 'finance' | null;
+type Role = 'admin' | 'teacher' | 'student' | 'parent' | 'finance' | null;
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  role: UserRole;
+  role: Role;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: any) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  session: null,
+  role: null,
+  loading: true,
+  signIn: async () => {},
+  signUp: async () => {},
+  signOut: async () => {},
+});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [role, setRole] = useState<UserRole>(null);
+  const [role, setRole] = useState<Role>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          throw error;
+        }
+        
+        setSession(session);
+        setUser(session?.user || null);
+        setRole(session?.user?.user_metadata?.role as Role || null);
+      } catch (error) {
         console.error('Error getting session:', error);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      setSession(session);
-      setUser(session?.user || null);
-      
-      // Get user role from metadata
-      if (session?.user?.user_metadata?.role) {
-        setRole(session.user.user_metadata.role as UserRole);
-      }
-      
-      setLoading(false);
     };
-
+    
     getSession();
-
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
         setUser(session?.user || null);
-        
-        // Get user role from metadata
-        if (session?.user?.user_metadata?.role) {
-          setRole(session.user.user_metadata.role as UserRole);
-        } else {
-          setRole(null);
-        }
-        
+        setRole(session?.user?.user_metadata?.role as Role || null);
         setLoading(false);
       }
     );
-
+    
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase.auth, router]);
+  }, [supabase]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -77,14 +77,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
       });
-
+      
       if (error) {
         throw error;
       }
-
+      
       router.push('/dashboard');
-    } catch (error) {
-      console.error('Error signing in:', error);
+    } catch (error: any) {
+      console.error('Error signing in:', error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -98,22 +98,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          data: {
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-            role: userData.role,
-          },
+          data: userData,
         },
       });
-
+      
       if (error) {
         throw error;
       }
-
-      // After signup, sign in automatically
-      await signIn(email, password);
-    } catch (error) {
-      console.error('Error signing up:', error);
+      
+      router.push('/login');
+    } catch (error: any) {
+      console.error('Error signing up:', error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -130,32 +125,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       router.push('/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
+    } catch (error: any) {
+      console.error('Error signing out:', error.message);
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const value = {
-    user,
-    session,
-    role,
-    loading,
-    signIn,
-    signUp,
-    signOut,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        role,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-export function useAuthContext() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuthContext must be used within an AuthProvider');
-  }
-  return context;
-}
+export const useAuthContext = () => useContext(AuthContext);
 
