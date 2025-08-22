@@ -1,293 +1,429 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { useAuthContext } from '@/context/auth-context';
 import DashboardLayout from '@/components/layouts/dashboard-layout';
+import { StatCard } from '@/components/dashboard/stat-card';
+import { AreaChart } from '@/components/dashboard/area-chart';
+import { BarChart } from '@/components/dashboard/bar-chart';
+import { DonutChart } from '@/components/dashboard/donut-chart';
+import { GaugeChart } from '@/components/dashboard/gauge-chart';
+import { DataTable } from '@/components/dashboard/data-table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/select';
-import { Form, FormField, FormLabel } from '@/components/ui/form';
-import { Plus, DollarSign, Receipt, CreditCard, BarChart, Download } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
+import { 
+  DollarSign, 
+  CreditCard, 
+  TrendingUp, 
+  TrendingDown,
+  Download,
+  FileText,
+  Filter,
+  Calendar
+} from 'lucide-react';
+import { format } from 'date-fns';
 
-// Sample fee types
-const FEE_TYPES = [
-  { id: '1', name: 'Tuition Fee', amount: 50000, frequency: 'term' },
-  { id: '2', name: 'Development Fee', amount: 10000, frequency: 'year' },
-  { id: '3', name: 'Library Fee', amount: 5000, frequency: 'year' },
-  { id: '4', name: 'Computer Lab Fee', amount: 8000, frequency: 'term' },
-  { id: '5', name: 'Sports Fee', amount: 5000, frequency: 'term' },
+// Sample data for charts
+const revenueData = [42500, 56000, 48000, 61000, 53000, 57000, 68000, 71000, 65000, 74000, 79000, 82000];
+const monthlyCategories = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const feeCollectionData = [
+  {
+    name: 'Collected',
+    data: [35000, 42000, 40000, 45000, 50000, 52000, 60000, 65000, 58000, 68000, 72000, 75000],
+  },
+  {
+    name: 'Outstanding',
+    data: [7500, 14000, 8000, 16000, 3000, 5000, 8000, 6000, 7000, 6000, 7000, 7000],
+  },
 ];
 
-// Sample recent payments
-const RECENT_PAYMENTS = [
+const feeDistributionSeries = [45, 25, 15, 10, 5];
+const feeDistributionLabels = ['Tuition', 'Development', 'Technology', 'Sports', 'Others'];
+
+const paymentMethodSeries = [65, 20, 15];
+const paymentMethodLabels = ['Bank Transfer', 'Cash', 'Mobile Money'];
+
+// Sample data for recent payments
+const recentPayments = [
   {
-    id: '1',
-    student_name: 'John Smith',
-    admission_number: 'ADM2023001',
-    amount: 50000,
-    payment_date: '2023-11-15',
-    payment_method: 'Bank Transfer',
-    receipt_number: 'REC20231115001',
+    id: 'PAY-001',
+    student: 'John Doe',
+    amount: 1250.00,
+    date: '2023-12-01',
     status: 'completed',
+    method: 'Bank Transfer',
   },
   {
-    id: '2',
-    student_name: 'Sarah Johnson',
-    admission_number: 'ADM2023045',
-    amount: 63000,
-    payment_date: '2023-11-14',
-    payment_method: 'Cash',
-    receipt_number: 'REC20231114003',
+    id: 'PAY-002',
+    student: 'Jane Smith',
+    amount: 950.00,
+    date: '2023-11-28',
     status: 'completed',
+    method: 'Cash',
   },
   {
-    id: '3',
-    student_name: 'Michael Brown',
-    admission_number: 'ADM2023078',
-    amount: 50000,
-    payment_date: '2023-11-13',
-    payment_method: 'Mobile Money',
-    receipt_number: 'REC20231113007',
+    id: 'PAY-003',
+    student: 'Michael Johnson',
+    amount: 1500.00,
+    date: '2023-11-25',
     status: 'completed',
+    method: 'Mobile Money',
   },
   {
-    id: '4',
-    student_name: 'Emily Davis',
-    admission_number: 'ADM2023022',
-    amount: 50000,
-    payment_date: '2023-11-10',
-    payment_method: 'Bank Transfer',
-    receipt_number: 'REC20231110002',
+    id: 'PAY-004',
+    student: 'Sarah Williams',
+    amount: 1100.00,
+    date: '2023-11-22',
     status: 'completed',
+    method: 'Bank Transfer',
   },
   {
-    id: '5',
-    student_name: 'David Wilson',
-    admission_number: 'ADM2023056',
-    amount: 50000,
-    payment_date: '2023-11-08',
-    payment_method: 'Cash',
-    receipt_number: 'REC20231108005',
+    id: 'PAY-005',
+    student: 'Robert Brown',
+    amount: 850.00,
+    date: '2023-11-20',
     status: 'completed',
+    method: 'Cash',
+  },
+  {
+    id: 'PAY-006',
+    student: 'Emily Davis',
+    amount: 1300.00,
+    date: '2023-11-18',
+    status: 'completed',
+    method: 'Mobile Money',
+  },
+  {
+    id: 'PAY-007',
+    student: 'David Miller',
+    amount: 1050.00,
+    date: '2023-11-15',
+    status: 'completed',
+    method: 'Bank Transfer',
+  },
+];
+
+// Sample data for upcoming payments
+const upcomingPayments = [
+  {
+    id: 'INV-001',
+    student: 'Thomas Wilson',
+    amount: 1200.00,
+    dueDate: '2023-12-10',
+    status: 'pending',
+  },
+  {
+    id: 'INV-002',
+    student: 'Lisa Anderson',
+    amount: 950.00,
+    dueDate: '2023-12-12',
+    status: 'pending',
+  },
+  {
+    id: 'INV-003',
+    student: 'James Taylor',
+    amount: 1450.00,
+    dueDate: '2023-12-15',
+    status: 'pending',
   },
 ];
 
 export default function FinancePage() {
-  const { loading: authLoading, role } = useAuthContext();
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState('2023-2024');
-  const [selectedTerm, setSelectedTerm] = useState('Term 1');
-
-  if (authLoading) {
-    return (
-      <DashboardLayout>
-        <div className="flex h-full items-center justify-center">
-          <p>Loading...</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
+  const [selectedPeriod, setSelectedPeriod] = useState('This Year');
+  
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Finance</h1>
+            <h1 className="text-3xl font-bold">Finance Dashboard</h1>
             <p className="text-muted-foreground">
-              Manage fees, payments, and financial records
+              Overview of financial performance and fee collection
             </p>
           </div>
-          {(role === 'admin' || role === 'finance') && (
-            <div className="flex items-center gap-2">
-              <Link href="/finance/reports">
-                <Button variant="outline">
-                  <Download className="mr-2 h-4 w-4" />
-                  Reports
-                </Button>
-              </Link>
-              <Link href="/finance/payment/new">
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Record Payment
-                </Button>
-              </Link>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm">
+              <Calendar className="mr-2 h-4 w-4" />
+              {format(new Date(), 'MMMM yyyy')}
+            </Button>
+            <Button variant="outline" size="sm">
+              <Filter className="mr-2 h-4 w-4" />
+              Filter
+            </Button>
+            <Button size="sm">
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full bg-primary/10 p-3">
-                <DollarSign className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Total Collected</p>
-                <h3 className="text-2xl font-bold">₦ 5,450,000</h3>
-                <p className="text-xs text-muted-foreground">Current Term</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full bg-primary/10 p-3">
-                <Receipt className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Outstanding</p>
-                <h3 className="text-2xl font-bold">₦ 1,250,000</h3>
-                <p className="text-xs text-muted-foreground">Current Term</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full bg-primary/10 p-3">
-                <CreditCard className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Payments</p>
-                <h3 className="text-2xl font-bold">109</h3>
-                <p className="text-xs text-muted-foreground">Current Term</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full bg-primary/10 p-3">
-                <BarChart className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Collection Rate</p>
-                <h3 className="text-2xl font-bold">81.3%</h3>
-                <p className="text-xs text-muted-foreground">Current Term</p>
-              </div>
-            </div>
-          </div>
+          <StatCard
+            title="Total Revenue"
+            value="₦3.62M"
+            icon={<DollarSign className="h-6 w-6" />}
+            change={{ value: 12.5, trend: "up", text: "from last term" }}
+          />
+          <StatCard
+            title="Fee Collection"
+            value="81.3%"
+            icon={<CreditCard className="h-6 w-6" />}
+            change={{ value: 7.2, trend: "up", text: "from last term" }}
+          />
+          <StatCard
+            title="Outstanding Fees"
+            value="₦720K"
+            icon={<TrendingDown className="h-6 w-6" />}
+            change={{ value: 4.8, trend: "down", text: "from last term" }}
+          />
+          <StatCard
+            title="Expenses"
+            value="₦2.14M"
+            icon={<TrendingUp className="h-6 w-6" />}
+            change={{ value: 2.3, trend: "up", text: "from last term" }}
+          />
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-lg border bg-card shadow-sm">
-            <div className="p-6">
-              <h3 className="text-lg font-medium">Fee Structure</h3>
-              <p className="text-sm text-muted-foreground">
-                {selectedAcademicYear}, {selectedTerm}
-              </p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/50 text-left">
-                    <th className="px-4 py-3 font-medium">Fee Type</th>
-                    <th className="px-4 py-3 font-medium">Amount (₦)</th>
-                    <th className="px-4 py-3 font-medium">Frequency</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {FEE_TYPES.map((fee) => (
-                    <tr key={fee.id} className="border-b">
-                      <td className="px-4 py-3 font-medium">{fee.name}</td>
-                      <td className="px-4 py-3">{fee.amount.toLocaleString()}</td>
-                      <td className="px-4 py-3 capitalize">{fee.frequency}</td>
-                    </tr>
-                  ))}
-                  <tr className="bg-muted/20">
-                    <td className="px-4 py-3 font-medium">Total Term Fees</td>
-                    <td className="px-4 py-3 font-bold">
-                      {FEE_TYPES.reduce(
-                        (total, fee) =>
-                          total +
-                          (fee.frequency === 'term'
-                            ? fee.amount
-                            : fee.amount / 3),
-                        0
-                      ).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3"></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="rounded-lg border bg-card shadow-sm">
-            <div className="p-6">
-              <h3 className="text-lg font-medium">Recent Payments</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/50 text-left">
-                    <th className="px-4 py-3 font-medium">Student</th>
-                    <th className="px-4 py-3 font-medium">Amount (₦)</th>
-                    <th className="px-4 py-3 font-medium">Date</th>
-                    <th className="px-4 py-3 font-medium">Receipt</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {RECENT_PAYMENTS.map((payment) => (
-                    <tr key={payment.id} className="border-b">
-                      <td className="px-4 py-3">
-                        <div className="font-medium">{payment.student_name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {payment.admission_number}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">{payment.amount.toLocaleString()}</td>
-                      <td className="px-4 py-3">{formatDate(payment.payment_date)}</td>
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/finance/receipt/${payment.receipt_number}`}
-                          className="text-primary hover:underline"
-                        >
-                          {payment.receipt_number}
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="p-4 text-center">
-                <Link href="/finance/payments" className="text-primary hover:underline">
-                  View All Payments
-                </Link>
-              </div>
-            </div>
-          </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <AreaChart
+            title="Revenue Trend"
+            data={revenueData}
+            categories={monthlyCategories}
+            colors={['#7c3aed']}
+          />
+          <BarChart
+            title="Fee Collection Analysis"
+            series={feeCollectionData}
+            categories={monthlyCategories}
+            colors={['#22c55e', '#f59e0b']}
+            stacked={true}
+          />
         </div>
 
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h3 className="text-lg font-medium mb-4">Payment Methods</h3>
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            <div className="rounded-lg border p-4">
-              <h4 className="font-medium">Bank Transfer</h4>
-              <p className="mt-2 text-sm">
-                <span className="block">Bank: First Bank of Nigeria</span>
-                <span className="block">Account Name: EDU-WISE BASIC</span>
-                <span className="block">Account Number: 1234567890</span>
-              </p>
-            </div>
-            <div className="rounded-lg border p-4">
-              <h4 className="font-medium">Mobile Money</h4>
-              <p className="mt-2 text-sm">
-                <span className="block">Provider: MTN MoMo</span>
-                <span className="block">Number: 0801234567</span>
-                <span className="block">Account Name: EDU-WISE BASIC</span>
-              </p>
-            </div>
-            <div className="rounded-lg border p-4">
-              <h4 className="font-medium">Cash Payment</h4>
-              <p className="mt-2 text-sm">
-                <span className="block">Location: School Finance Office</span>
-                <span className="block">Hours: 8:00 AM - 2:00 PM</span>
-                <span className="block">Days: Monday - Friday</span>
-              </p>
-            </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <DonutChart
+            title="Fee Distribution"
+            series={feeDistributionSeries}
+            labels={feeDistributionLabels}
+            colors={['#7c3aed', '#0ea5e9', '#22c55e', '#f59e0b', '#64748b']}
+          />
+          <DonutChart
+            title="Payment Methods"
+            series={paymentMethodSeries}
+            labels={paymentMethodLabels}
+            colors={['#0ea5e9', '#22c55e', '#f59e0b']}
+          />
+          <GaugeChart
+            title="Collection Target"
+            value={81}
+            color="#7c3aed"
+          />
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <DataTable
+              title="Recent Payments"
+              data={recentPayments}
+              columns={[
+                {
+                  header: 'Receipt ID',
+                  accessorKey: 'id',
+                },
+                {
+                  header: 'Student',
+                  accessorKey: 'student',
+                },
+                {
+                  header: 'Amount',
+                  accessorKey: 'amount',
+                  cell: (row) => (
+                    <span className="font-medium">
+                      ₦{row.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </span>
+                  ),
+                },
+                {
+                  header: 'Date',
+                  accessorKey: 'date',
+                  cell: (row) => format(new Date(row.date), 'MMM dd, yyyy'),
+                },
+                {
+                  header: 'Method',
+                  accessorKey: 'method',
+                },
+                {
+                  header: 'Status',
+                  accessorKey: 'status',
+                  cell: (row) => (
+                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400">
+                      {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+                    </span>
+                  ),
+                },
+              ]}
+              searchable
+              searchPlaceholder="Search payments..."
+            />
           </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Upcoming Payments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {upcomingPayments.map((payment) => (
+                  <div key={payment.id} className="flex items-start gap-4 rounded-lg border p-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                      <FileText className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium">{payment.student}</h4>
+                        <span className="text-sm font-medium">
+                          ₦{payment.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
+                        <span>Due: {format(new Date(payment.dueDate), 'MMM dd, yyyy')}</span>
+                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800/20 dark:text-yellow-400">
+                          {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <Button variant="outline" className="w-full">
+                  View All Invoices
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Fee Collection by Class</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Primary 1</span>
+                    <span className="font-medium">92%</span>
+                  </div>
+                  <Progress value={92} indicatorColor="bg-green-500" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Primary 2</span>
+                    <span className="font-medium">88%</span>
+                  </div>
+                  <Progress value={88} indicatorColor="bg-green-500" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Primary 3</span>
+                    <span className="font-medium">76%</span>
+                  </div>
+                  <Progress value={76} indicatorColor="bg-green-500" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Primary 4</span>
+                    <span className="font-medium">84%</span>
+                  </div>
+                  <Progress value={84} indicatorColor="bg-green-500" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Primary 5</span>
+                    <span className="font-medium">79%</span>
+                  </div>
+                  <Progress value={79} indicatorColor="bg-green-500" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Primary 6</span>
+                    <span className="font-medium">68%</span>
+                  </div>
+                  <Progress value={68} indicatorColor="bg-yellow-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Financial Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-lg border p-4">
+                    <div className="text-sm text-muted-foreground">Total Revenue</div>
+                    <div className="mt-1 text-2xl font-bold">₦3,620,000</div>
+                    <div className="mt-1 flex items-center text-xs text-green-500">
+                      <TrendingUp className="mr-1 h-3 w-3" />
+                      <span>12.5% increase</span>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border p-4">
+                    <div className="text-sm text-muted-foreground">Total Expenses</div>
+                    <div className="mt-1 text-2xl font-bold">₦2,140,000</div>
+                    <div className="mt-1 flex items-center text-xs text-red-500">
+                      <TrendingUp className="mr-1 h-3 w-3" />
+                      <span>2.3% increase</span>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border p-4">
+                    <div className="text-sm text-muted-foreground">Net Profit</div>
+                    <div className="mt-1 text-2xl font-bold">₦1,480,000</div>
+                    <div className="mt-1 flex items-center text-xs text-green-500">
+                      <TrendingUp className="mr-1 h-3 w-3" />
+                      <span>21.9% increase</span>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border p-4">
+                    <div className="text-sm text-muted-foreground">Profit Margin</div>
+                    <div className="mt-1 text-2xl font-bold">40.8%</div>
+                    <div className="mt-1 flex items-center text-xs text-green-500">
+                      <TrendingUp className="mr-1 h-3 w-3" />
+                      <span>3.2% increase</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-lg border p-4">
+                  <div className="mb-2 text-sm font-medium">Budget Utilization</div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span>Staff Salaries</span>
+                      <span>65% of budget</span>
+                    </div>
+                    <Progress value={65} indicatorColor="bg-blue-500" />
+                    <div className="flex items-center justify-between text-xs">
+                      <span>Infrastructure</span>
+                      <span>42% of budget</span>
+                    </div>
+                    <Progress value={42} indicatorColor="bg-purple-500" />
+                    <div className="flex items-center justify-between text-xs">
+                      <span>Learning Materials</span>
+                      <span>78% of budget</span>
+                    </div>
+                    <Progress value={78} indicatorColor="bg-green-500" />
+                    <div className="flex items-center justify-between text-xs">
+                      <span>Administrative</span>
+                      <span>51% of budget</span>
+                    </div>
+                    <Progress value={51} indicatorColor="bg-orange-500" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </DashboardLayout>
