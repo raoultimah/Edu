@@ -1,54 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/middleware';
 
-export async function middleware(request: NextRequest) {
+export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
-  const supabase = createClient(request, res);
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  // Check if user is authenticated
-  const isAuthenticated = !!user;
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 
-                      request.nextUrl.pathname.startsWith('/register') || 
-                      request.nextUrl.pathname.startsWith('/forgot-password');
-  
-  // Redirect unauthenticated users to login
-  if (!isAuthenticated && !isAuthRoute && request.nextUrl.pathname !== '/') {
-    return NextResponse.redirect(new URL('/login', request.url));
+  const supabase = createClient(req, res);
+  const { data: { session } } = await supabase.auth.getSession();
+
+  // Get the pathname from the URL
+  const path = req.nextUrl.pathname;
+
+  // Check if the path is a protected route
+  const isProtectedRoute = path.startsWith('/dashboard') || 
+                          path.startsWith('/students') || 
+                          path.startsWith('/academics') || 
+                          path.startsWith('/timetable') || 
+                          path.startsWith('/exams') || 
+                          path.startsWith('/finance') || 
+                          path.startsWith('/settings');
+
+  // Check if the path is an auth route
+  const isAuthRoute = path.startsWith('/login') || path.startsWith('/register');
+
+  // If the route is protected and the user is not authenticated, redirect to login
+  if (isProtectedRoute && !session) {
+    const redirectUrl = new URL('/login', req.url);
+    redirectUrl.searchParams.set('redirect', path);
+    return NextResponse.redirect(redirectUrl);
   }
-  
-  // Redirect authenticated users away from auth routes
-  if (isAuthenticated && isAuthRoute) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+
+  // If the user is authenticated and trying to access an auth route, redirect to dashboard
+  if (isAuthRoute && session) {
+    return NextResponse.redirect(new URL('/dashboard', req.url));
   }
-  
-  // Check role-based access
-  if (isAuthenticated && user.user_metadata?.role) {
-    const userRole = user.user_metadata.role;
-    const path = request.nextUrl.pathname;
-    
-    const roleRoutes = {
-      admin: ['/admin', '/settings'],
-      teacher: ['/teacher', '/marks'],
-      finance: ['/finance', '/payments'],
-      parent: ['/parent', '/children'],
-      student: ['/student', '/results']
-    };
-    
-    for (const [role, routes] of Object.entries(roleRoutes)) {
-      if (routes.some(route => path.startsWith(route)) && userRole !== role) {
-        return NextResponse.redirect(new URL('/unauthorized', request.url));
-      }
-    }
+
+  // If the user is authenticated and trying to access the root path, redirect to dashboard
+  if (path === '/' && session) {
+    return NextResponse.redirect(new URL('/dashboard', req.url));
   }
-  
+
   return res;
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };
 

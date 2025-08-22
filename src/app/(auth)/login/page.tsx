@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuthContext } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -11,53 +11,68 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuthContext();
   const router = useRouter();
-  const supabase = createClient();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect') || '/dashboard';
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+    setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      router.push('/dashboard');
-    } catch (error: any) {
-      setError(error.message || 'An error occurred during login');
+      await signIn(email, password);
+      router.push(redirectUrl);
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Welcome Back</h1>
+          <h1 className="text-3xl font-bold">EDU-WISE BASIC</h1>
+          <h2 className="mt-6 text-2xl font-bold tracking-tight text-gray-900">
+            Sign in to your account
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in to access your EDU-WISE BASIC account
+            Or{' '}
+            <Link
+              href="/register"
+              className="font-medium text-primary hover:text-primary/90"
+            >
+              create a new account
+            </Link>
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && (
-            <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
-              {error}
+        {error && (
+          <div className="rounded-md bg-red-50 p-4">
+            <div className="flex">
+              <div className="text-sm text-red-700">{error}</div>
             </div>
-          )}
+          </div>
+        )}
 
-          <div className="space-y-4">
+        {searchParams.get('message') && (
+          <div className="rounded-md bg-green-50 p-4">
+            <div className="flex">
+              <div className="text-sm text-green-700">
+                {searchParams.get('message')}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-4 rounded-md shadow-sm">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="sr-only">
                 Email address
               </label>
               <Input
@@ -66,14 +81,13 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
+                placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1"
               />
             </div>
-
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="sr-only">
                 Password
               </label>
               <Input
@@ -82,37 +96,47 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1"
               />
             </div>
           </div>
 
           <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label
+                htmlFor="remember-me"
+                className="ml-2 block text-sm text-gray-900"
+              >
+                Remember me
+              </label>
+            </div>
+
             <div className="text-sm">
-              <Link
-                href="/forgot-password"
-                className="font-medium text-primary hover:text-primary/80"
+              <a
+                href="#"
+                className="font-medium text-primary hover:text-primary/90"
               >
                 Forgot your password?
-              </Link>
+              </a>
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? 'Signing in...' : 'Sign in'}
-          </Button>
-
-          <div className="text-center text-sm">
-            Don't have an account?{' '}
-            <Link href="/register" className="font-medium text-primary hover:text-primary/80">
-              Register
-            </Link>
+          <div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </Button>
           </div>
         </form>
       </div>
