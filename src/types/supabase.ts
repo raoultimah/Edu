@@ -9,368 +9,553 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      academic_years: {
-        Row: {
-          id: string
-          name: string
-          start_date: string
-          end_date: string
-          is_current: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          start_date: string
-          end_date: string
-          is_current?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          start_date?: string
-          end_date?: string
-          is_current?: boolean
-          created_at?: string
-        }
-        Relationships: []
-      }
-      terms: {
-        Row: {
-          id: string
-          name: string
-          academic_year_id: string
-          start_date: string
-          end_date: string
-          sequence_count: number
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          academic_year_id: string
-          start_date: string
-          end_date: string
-          sequence_count: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          academic_year_id?: string
-          start_date?: string
-          end_date?: string
-          sequence_count?: number
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "terms_academic_year_id_fkey"
-            columns: ["academic_year_id"]
-            referencedRelation: "academic_years"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      classes: {
-        Row: {
-          id: string
-          name: string
-          level: number
-          academic_year_id: string
-          default_promotion_threshold: number
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          level: number
-          academic_year_id: string
-          default_promotion_threshold?: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          level?: number
-          academic_year_id?: string
-          default_promotion_threshold?: number
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "classes_academic_year_id_fkey"
-            columns: ["academic_year_id"]
-            referencedRelation: "academic_years"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      sections: {
-        Row: {
-          id: string
-          name: string
-          class_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          class_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          class_id?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sections_class_id_fkey"
-            columns: ["class_id"]
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      subjects: {
-        Row: {
-          id: string
-          name: string
-          code: string
-          coefficient: number
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          code: string
-          coefficient?: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          code?: string
-          coefficient?: number
-          created_at?: string
-        }
-        Relationships: []
-      }
-      subject_assignments: {
-        Row: {
-          id: string
-          subject_id: string
-          class_id: string
-          teacher_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          subject_id: string
-          class_id: string
-          teacher_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          subject_id?: string
-          class_id?: string
-          teacher_id?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subject_assignments_subject_id_fkey"
-            columns: ["subject_id"]
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "subject_assignments_class_id_fkey"
-            columns: ["class_id"]
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "subject_assignments_teacher_id_fkey"
-            columns: ["teacher_id"]
-            referencedRelation: "employees"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       students: {
         Row: {
           id: string
+          created_at: string
+          updated_at: string
           first_name: string
           last_name: string
+          middle_name: string | null
           date_of_birth: string
           gender: string
-          address: string
-          phone: string
-          email: string
-          current_class_id: string
-          current_section_id: string
-          academic_year_id: string
-          user_id: string
-          created_at: string
+          admission_number: string
+          admission_date: string
+          current_class_id: string | null
+          current_section_id: string | null
+          address: string | null
+          city: string | null
+          state: string | null
+          country: string | null
+          phone: string | null
+          email: string | null
+          status: string
+          profile_image: string | null
         }
         Insert: {
           id?: string
+          created_at?: string
+          updated_at?: string
           first_name: string
           last_name: string
+          middle_name?: string | null
           date_of_birth: string
           gender: string
-          address: string
-          phone?: string
-          email?: string
-          current_class_id: string
-          current_section_id: string
-          academic_year_id: string
-          user_id: string
-          created_at?: string
+          admission_number: string
+          admission_date: string
+          current_class_id?: string | null
+          current_section_id?: string | null
+          address?: string | null
+          city?: string | null
+          state?: string | null
+          country?: string | null
+          phone?: string | null
+          email?: string | null
+          status?: string
+          profile_image?: string | null
         }
         Update: {
           id?: string
+          created_at?: string
+          updated_at?: string
           first_name?: string
           last_name?: string
+          middle_name?: string | null
           date_of_birth?: string
           gender?: string
-          address?: string
-          phone?: string
-          email?: string
-          current_class_id?: string
-          current_section_id?: string
-          academic_year_id?: string
-          user_id?: string
-          created_at?: string
+          admission_number?: string
+          admission_date?: string
+          current_class_id?: string | null
+          current_section_id?: string | null
+          address?: string | null
+          city?: string | null
+          state?: string | null
+          country?: string | null
+          phone?: string | null
+          email?: string | null
+          status?: string
+          profile_image?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "students_current_class_id_fkey"
-            columns: ["current_class_id"]
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "students_current_section_id_fkey"
-            columns: ["current_section_id"]
-            referencedRelation: "sections"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "students_academic_year_id_fkey"
-            columns: ["academic_year_id"]
-            referencedRelation: "academic_years"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "students_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
       }
       guardians: {
         Row: {
           id: string
-          student_id: string
-          guardian_id: string
-          relationship: string
           created_at: string
-        }
-        Insert: {
-          id?: string
-          student_id: string
-          guardian_id: string
-          relationship: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          student_id?: string
-          guardian_id?: string
-          relationship?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "guardians_student_id_fkey"
-            columns: ["student_id"]
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "guardians_guardian_id_fkey"
-            columns: ["guardian_id"]
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      employees: {
-        Row: {
-          id: string
+          updated_at: string
           first_name: string
           last_name: string
-          date_of_birth: string
-          gender: string
-          address: string
+          relationship: string
           phone: string
-          email: string
-          position: string
-          department: string
-          hire_date: string
-          user_id: string
-          created_at: string
+          email: string | null
+          occupation: string | null
+          address: string | null
+          city: string | null
+          state: string | null
+          country: string | null
         }
         Insert: {
           id?: string
+          created_at?: string
+          updated_at?: string
           first_name: string
           last_name: string
-          date_of_birth: string
-          gender: string
-          address: string
-          phone?: string
-          email?: string
-          position: string
-          department: string
-          hire_date: string
-          user_id: string
-          created_at?: string
+          relationship: string
+          phone: string
+          email?: string | null
+          occupation?: string | null
+          address?: string | null
+          city?: string | null
+          state?: string | null
+          country?: string | null
         }
         Update: {
           id?: string
+          created_at?: string
+          updated_at?: string
           first_name?: string
           last_name?: string
-          date_of_birth?: string
-          gender?: string
-          address?: string
+          relationship?: string
           phone?: string
-          email?: string
-          position?: string
-          department?: string
-          hire_date?: string
-          user_id?: string
-          created_at?: string
+          email?: string | null
+          occupation?: string | null
+          address?: string | null
+          city?: string | null
+          state?: string | null
+          country?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "employees_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
+      }
+      student_guardians: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          student_id: string
+          guardian_id: string
+          is_primary: boolean
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          student_id: string
+          guardian_id: string
+          is_primary?: boolean
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          student_id?: string
+          guardian_id?: string
+          is_primary?: boolean
+        }
+      }
+      classes: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string
+          level: number
+          academic_year_id: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name: string
+          level: number
+          academic_year_id: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name?: string
+          level?: number
+          academic_year_id?: string
+        }
+      }
+      sections: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string
+          class_id: string
+          teacher_id: string | null
+          capacity: number | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name: string
+          class_id: string
+          teacher_id?: string | null
+          capacity?: number | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name?: string
+          class_id?: string
+          teacher_id?: string | null
+          capacity?: number | null
+        }
+      }
+      subjects: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string
+          code: string
+          description: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name: string
+          code: string
+          description?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name?: string
+          code?: string
+          description?: string | null
+        }
+      }
+      teachers: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          first_name: string
+          last_name: string
+          email: string
+          phone: string | null
+          qualification: string | null
+          joining_date: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          first_name: string
+          last_name: string
+          email: string
+          phone?: string | null
+          qualification?: string | null
+          joining_date: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          first_name?: string
+          last_name?: string
+          email?: string
+          phone?: string | null
+          qualification?: string | null
+          joining_date?: string
+          status?: string
+          user_id?: string | null
+        }
+      }
+      academic_years: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string
+          start_date: string
+          end_date: string
+          is_current: boolean
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name: string
+          start_date: string
+          end_date: string
+          is_current?: boolean
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name?: string
+          start_date?: string
+          end_date?: string
+          is_current?: boolean
+        }
+      }
+      terms: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string
+          academic_year_id: string
+          start_date: string
+          end_date: string
+          is_current: boolean
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name: string
+          academic_year_id: string
+          start_date: string
+          end_date: string
+          is_current?: boolean
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name?: string
+          academic_year_id?: string
+          start_date?: string
+          end_date?: string
+          is_current?: boolean
+        }
+      }
+      timetables: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          class_id: string
+          section_id: string
+          subject_id: string
+          teacher_id: string
+          day_of_week: number
+          start_time: string
+          end_time: string
+          room: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          class_id: string
+          section_id: string
+          subject_id: string
+          teacher_id: string
+          day_of_week: number
+          start_time: string
+          end_time: string
+          room?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          class_id?: string
+          section_id?: string
+          subject_id?: string
+          teacher_id?: string
+          day_of_week?: number
+          start_time?: string
+          end_time?: string
+          room?: string | null
+        }
+      }
+      exams: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string
+          term_id: string
+          start_date: string
+          end_date: string
+          status: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name: string
+          term_id: string
+          start_date: string
+          end_date: string
+          status?: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name?: string
+          term_id?: string
+          start_date?: string
+          end_date?: string
+          status?: string
+        }
+      }
+      exam_results: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          exam_id: string
+          student_id: string
+          subject_id: string
+          marks: number
+          grade: string
+          remarks: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          exam_id: string
+          student_id: string
+          subject_id: string
+          marks: number
+          grade: string
+          remarks?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          exam_id?: string
+          student_id?: string
+          subject_id?: string
+          marks?: number
+          grade?: string
+          remarks?: string | null
+        }
+      }
+      fees: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string
+          amount: number
+          frequency: string
+          academic_year_id: string
+          class_id: string | null
+          description: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name: string
+          amount: number
+          frequency: string
+          academic_year_id: string
+          class_id?: string | null
+          description?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name?: string
+          amount?: number
+          frequency?: string
+          academic_year_id?: string
+          class_id?: string | null
+          description?: string | null
+        }
+      }
+      payments: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          student_id: string
+          amount: number
+          payment_date: string
+          payment_method: string
+          receipt_number: string
+          term_id: string
+          status: string
+          notes: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          student_id: string
+          amount: number
+          payment_date: string
+          payment_method: string
+          receipt_number: string
+          term_id: string
+          status?: string
+          notes?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          student_id?: string
+          amount?: number
+          payment_date?: string
+          payment_method?: string
+          receipt_number?: string
+          term_id?: string
+          status?: string
+          notes?: string | null
+        }
+      }
+      payment_details: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          payment_id: string
+          fee_id: string
+          amount: number
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          payment_id: string
+          fee_id: string
+          amount: number
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          payment_id?: string
+          fee_id?: string
+          amount?: number
+        }
       }
     }
-    Views: {}
-    Functions: {}
-    Enums: {}
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
 }
 

@@ -1,48 +1,48 @@
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { useEffect, useState } from 'react';
-import { User } from '@supabase/supabase-js';
+import type { User, Session } from '@supabase/supabase-js';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
-    const getUser = async () => {
-      setLoading(true);
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-        setRole(user?.user_metadata?.role || null);
-      } catch (error) {
-        console.error('Error getting user:', error);
-        setUser(null);
-        setRole(null);
-      } finally {
+    const getSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error getting session:', error);
         setLoading(false);
+        return;
       }
+
+      setSession(session);
+      setUser(session?.user || null);
+      setLoading(false);
     };
 
-    getUser();
+    getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        setSession(session);
         setUser(session?.user || null);
-        setRole(session?.user?.user_metadata?.role || null);
+        setLoading(false);
       }
     );
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase, router]);
+  }, [supabase.auth, router]);
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -51,19 +51,23 @@ export function useAuth() {
         throw error;
       }
 
-      return { data, error: null };
+      router.push('/dashboard');
     } catch (error) {
-      return { data: null, error };
+      console.error('Error signing in:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const signUp = async (email: string, password: string, metadata: any) => {
+  const signUp = async (email: string, password: string, userData: any) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      setLoading(true);
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: metadata,
+          data: userData,
         },
       });
 
@@ -71,27 +75,36 @@ export function useAuth() {
         throw error;
       }
 
-      return { data, error: null };
+      router.push('/login?message=Check your email to confirm your account');
     } catch (error) {
-      return { data: null, error };
+      console.error('Error signing up:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signOut();
+      
       if (error) {
         throw error;
       }
+      
       router.push('/login');
     } catch (error) {
       console.error('Error signing out:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   return {
     user,
-    role,
+    session,
     loading,
     signIn,
     signUp,
