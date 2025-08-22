@@ -1,223 +1,95 @@
-# EDU-WISE BASIC
+# EDU-WISE BASIC - School Management System
 
-A comprehensive school information management system built with Next.js and NestJS.
+EDU-WISE BASIC is a comprehensive school management system designed for basic education institutions. It provides a complete solution for managing students, academics, examinations, timetables, and finances.
 
-## 🚀 Features
+## Features
 
-- **Multi-tenant Architecture**: Support for multiple schools with data isolation
-- **Role-Based Access Control**: Comprehensive RBAC system for different user types
-- **Student Management**: Complete student lifecycle from registration to graduation
-- **Academic Management**: Timetables, exams, marks, and promotions
-- **Financial Management**: Fee collection, invoicing, and payment tracking
-- **HR & Payroll**: Employee management and automated payroll processing
-- **Automation**: Workflow automation for common school processes
-- **Multi-channel Notifications**: SMS, email, and in-app notifications
+- **Student Management**: Comprehensive student profiles, attendance tracking, and performance monitoring.
+- **Academic Management**: Curriculum planning, class scheduling, and subject management.
+- **Timetable Management**: Create and manage class schedules, teacher assignments, and room allocations.
+- **Examination System**: Exam creation, grading, result analysis, and report card generation.
+- **Finance Management**: Fee collection, expense tracking, and financial reporting.
+- **Communication**: Announcements, notifications, and parent-teacher communication.
 
-## 🏗️ Architecture
+## Tech Stack
 
-- **Frontend**: Next.js 14 with TypeScript, Tailwind CSS, and shadcn/ui
-- **Backend**: NestJS with TypeScript, TypeORM, and PostgreSQL
-- **Database**: PostgreSQL with Redis for caching and job queues
-- **File Storage**: MinIO (development) / AWS S3 (production)
-- **Authentication**: JWT-based with refresh tokens
-- **API**: RESTful APIs with GraphQL support
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL, Authentication, Storage)
+- **Deployment**: Vercel
 
-## 📋 Prerequisites
+## Getting Started
 
-- Node.js 18+ (20+ recommended)
+### Prerequisites
+
+- Node.js 18.x or later
 - npm or yarn
-- Docker and Docker Compose
-- PostgreSQL 15+
-- Redis 7+
+- Supabase account
 
-## 🛠️ Installation
+### Installation
 
-### 1. Clone the Repository
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/edu-wise-basic.git
+   cd edu-wise-basic
+   ```
 
-```bash
-git clone <repository-url>
-cd Rex
-```
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-### 2. Start Infrastructure Services
+3. Set up environment variables:
+   - Copy `.env.local.example` to `.env.local`
+   - Fill in your Supabase URL and anon key
 
-```bash
-docker-compose up -d
-```
+4. Run the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-This will start:
-- PostgreSQL on port 5432
-- Redis on port 6379
-- MinIO on ports 9000 (API) and 9001 (Console)
+5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-### 3. Backend Setup
+## Database Schema
 
-```bash
-cd backend
+The application uses the following main tables:
 
-# Install dependencies
-npm install
+- `users`: User accounts and authentication
+- `students`: Student information and profiles
+- `guardians`: Parent/guardian information
+- `classes`: Class levels and sections
+- `subjects`: Subject information
+- `teachers`: Teacher profiles and assignments
+- `timetables`: Class schedules
+- `exams`: Examination details
+- `exam_results`: Student examination results
+- `fees`: Fee structure and categories
+- `payments`: Payment records and receipts
 
-# Copy environment file
-cp env.example .env
+## Deployment
 
-# Edit .env with your configuration
-# Update database credentials, JWT secrets, etc.
+The application can be easily deployed to Vercel:
 
-# Start the backend
-npm run start:dev
-```
+1. Push your code to a GitHub repository
+2. Import the project in Vercel
+3. Set the environment variables
+4. Deploy
 
-The backend will be available at `http://localhost:3001`
+## Contributing
 
-### 4. Frontend Setup
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-```bash
-cd frontend
+## License
 
-# Install dependencies
-npm install
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-# Start the frontend
-npm run dev
-```
+## Acknowledgements
 
-The frontend will be available at `http://localhost:3000`
+- [Next.js](https://nextjs.org/)
+- [Supabase](https://supabase.io/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Lucide Icons](https://lucide.dev/)
 
-## 🔧 Configuration
-
-### Environment Variables
-
-Key environment variables to configure:
-
-- **Database**: `DB_URL`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
-- **Redis**: `REDIS_URL`, `REDIS_HOST`, `REDIS_PORT`
-- **JWT**: `JWT_SECRET`, `JWT_TTL`, `JWT_REFRESH_TTL`
-- **File Storage**: `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`, `S3_ENDPOINT`
-- **Email**: `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`
-- **SMS**: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`
-
-### Database Setup
-
-1. Create the database:
-```sql
-CREATE DATABASE eduwis_basic;
-CREATE USER eduwis_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE eduwis_basic TO eduwis_user;
-```
-
-2. The application will automatically create tables and run migrations in development mode.
-
-## 🚀 Development
-
-### Available Scripts
-
-**Backend:**
-```bash
-npm run start:dev      # Start in development mode
-npm run build          # Build the application
-npm run start:prod     # Start in production mode
-npm run test           # Run unit tests
-npm run test:e2e       # Run end-to-end tests
-npm run test:cov       # Run tests with coverage
-```
-
-**Frontend:**
-```bash
-npm run dev            # Start development server
-npm run build          # Build for production
-npm run start          # Start production server
-npm run lint           # Run ESLint
-npm run test           # Run tests
-```
-
-### Project Structure
-
-```
-eduwis-basic/
-├── frontend/          # Next.js frontend application
-├── backend/           # NestJS backend API
-├── docs/              # Documentation and specifications
-├── docker-compose.yml # Development infrastructure
-└── README.md          # This file
-```
-
-## 📚 API Documentation
-
-The API is available at `/api/v1` with the following main endpoints:
-
-- **Auth**: `/auth/login`, `/auth/refresh`, `/auth/logout`
-- **Students**: `/students`, `/students/:id`
-- **Employees**: `/employees`, `/employees/:id`
-- **Academics**: `/exams`, `/marks`, `/timetable`
-- **Finance**: `/payments`, `/invoices`, `/fees`
-- **HR**: `/payroll`, `/attendance`, `/tasks`
-
-## 🔒 Security Features
-
-- JWT-based authentication with refresh tokens
-- Role-based access control (RBAC)
-- Input validation and sanitization
-- Rate limiting and CORS protection
-- Helmet security headers
-- SQL injection prevention
-
-## 🧪 Testing
-
-```bash
-# Backend tests
-cd backend
-npm run test
-npm run test:e2e
-
-# Frontend tests
-cd frontend
-npm run test
-```
-
-## 📦 Deployment
-
-### Production Environment
-
-1. Set `NODE_ENV=production`
-2. Use managed PostgreSQL and Redis services
-3. Configure production file storage (AWS S3, etc.)
-4. Set up proper SSL certificates
-5. Configure monitoring and logging
-
-### Docker Deployment
-
-```bash
-# Build and run with Docker
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the repository
-- Check the documentation in the `docs/` folder
-- Review the API specifications
-
-## 🔄 Roadmap
-
-- [ ] Phase 1: Core Foundation (Authentication, Basic CRUD)
-- [ ] Phase 2: Academic Features (Exams, Results, Promotions)
-- [ ] Phase 3: Finance & HR (Payments, Payroll)
-- [ ] Phase 4: Advanced Features (ML, Mobile Apps)
-
----
-
-**Built with ❤️ for educational institutions**
