@@ -1,131 +1,94 @@
 # EDU-WISE BASIC School Management System
 
-EDU-WISE BASIC is a comprehensive school management system built with Next.js, Tailwind CSS, and Supabase. It provides a modern, responsive interface for managing all aspects of a school's operations.
+EDU-WISE BASIC is a comprehensive school management system designed to streamline administrative tasks, enhance communication, and improve the overall educational experience for schools.
+
+## Project Structure
+
+The project is organized into two main directories:
+
+- **frontend/**: Contains the Next.js web application
+- **backend/**: Contains database setup scripts and server-side logic
 
 ## Features
 
-- **Modern UI Design**: Clean, responsive interface built with Tailwind CSS
-- **Authentication**: Secure login and registration with Supabase Auth
-- **Dashboard**: Comprehensive overview of school metrics
 - **Student Management**: Track student information, attendance, and performance
-- **Academic Management**: Manage classes, subjects, and curriculum
-- **Examination System**: Create exams, record results, and generate reports
-- **Finance Management**: Track fees, payments, and expenses
-- **Timetable Management**: Create and manage class schedules
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-
-## Tech Stack
-
-- **Frontend**: Next.js 14, React 18, Tailwind CSS
-- **UI Components**: Radix UI, Framer Motion
-- **Authentication**: Supabase Auth
-- **Database**: Supabase (PostgreSQL)
-- **Forms**: React Hook Form, Zod
-- **Charts**: ApexCharts, Recharts
+- **Teacher Management**: Manage teacher profiles, assignments, and schedules
+- **Class Management**: Organize classes, subjects, and timetables
+- **Exam Management**: Create and manage exams, record results, and generate reports
+- **Finance Management**: Track fees, expenses, and generate financial reports
+- **Communication**: Enable communication between teachers, students, and parents
+- **Dashboard**: Visualize key metrics and statistics
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js (v14 or higher)
+- npm or yarn
 - Supabase account
 
-### Installation
+### Setup
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/edu-wise-basic.git
-   cd edu-wise-basic
-   ```
+1. **Clone the repository**
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+```bash
+git clone https://github.com/raoultimah/Edu.git
+cd Edu
+```
 
-3. Set up environment variables:
-   ```bash
-   cp .env.local.example .env.local
-   ```
-   
-   Edit `.env.local` and add your Supabase credentials:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-   ```
+2. **Set up environment variables**
 
-4. Set up the database:
-   ```bash
-   node scripts/run-all-setup.js
-   ```
-   This will:
-   - Create necessary SQL functions
-   - Set up the database schema
-   - Create sample data
-   - Set up authentication with test users
+Create `.env.local` files in both the frontend and backend directories based on the provided examples.
 
-5. Start the development server:
-   ```bash
-   npm run dev
-   ```
+3. **Set up the database**
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+```bash
+# Navigate to the backend directory
+cd backend
+
+# Install dependencies
+npm install
+
+# Run the database setup script
+npm run setup
+```
+
+4. **Start the frontend application**
+
+```bash
+# Navigate to the frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+5. **Access the application**
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Test Users
 
-After running the setup script, the following test users will be available:
+The setup script creates the following test users:
 
-1. **Admin**: admin@edu-wise-basic.com / Admin@123
-2. **Teacher**: teacher@edu-wise-basic.com / Teacher@123
-3. **Parent**: parent@edu-wise-basic.com / Parent@123
-4. **Student**: student@edu-wise-basic.com / Student@123
+- **Admin**: admin@edu-wise-basic.com / Admin@123
+- **Teacher**: teacher@edu-wise-basic.com / Teacher@123
+- **Parent**: parent@edu-wise-basic.com / Parent@123
+- **Student**: student@edu-wise-basic.com / Student@123
 
-Note: You may need to confirm these users in your Supabase dashboard if email confirmation is enabled.
+## Technologies Used
 
-## Database Schema
+- **Frontend**:
+  - Next.js
+  - React
+  - Tailwind CSS
+  - TypeScript
 
-The system uses the following main tables:
-
-- **students**: Student information
-- **classes**: Class information
-- **teachers**: Teacher information
-- **subjects**: Subject information
-- **exams**: Examination details
-- **exam_results**: Student exam results
-- **attendance**: Student attendance records
-- **timetable**: Class schedules
-- **fees**: Student fee records
-- **expenses**: School expense records
-- **announcements**: School announcements
-
-## Testing Workflow
-
-1. Start with the landing page at `/`
-2. Test authentication by logging in with one of the test users
-3. Explore the dashboard and each module:
-   - Students management
-   - Finance management
-   - Academic planning
-   - Examination management
-   - Timetable management
-4. Test data entry and retrieval in each module
-5. Test responsive design on different device sizes
-
-## Customization
-
-- **Branding**: Update colors and logos in the Tailwind configuration
-- **Content**: Modify text content in the page components
-- **Features**: Add or remove features by modifying the relevant components
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgements
-
-- [Next.js](https://nextjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Supabase](https://supabase.io/)
-- [Radix UI](https://www.radix-ui.com/)
-- [Framer Motion](https://www.framer.com/motion/)
+- **Backend**:
+  - Supabase
+  - PostgreSQL
+  - Node.js
 
