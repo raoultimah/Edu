@@ -1,223 +1,107 @@
 # EDU-WISE BASIC
 
-A comprehensive school information management system built with Next.js and NestJS.
+A modern, full-stack school information system built with Next.js 14 and Supabase.
 
-## 🚀 Features
+## Features
 
-- **Multi-tenant Architecture**: Support for multiple schools with data isolation
-- **Role-Based Access Control**: Comprehensive RBAC system for different user types
-- **Student Management**: Complete student lifecycle from registration to graduation
-- **Academic Management**: Timetables, exams, marks, and promotions
-- **Financial Management**: Fee collection, invoicing, and payment tracking
-- **HR & Payroll**: Employee management and automated payroll processing
-- **Automation**: Workflow automation for common school processes
-- **Multi-channel Notifications**: SMS, email, and in-app notifications
+- **Authentication System**: JWT-based authentication with role-based access control
+- **Academic Structure Management**: Manage academic years, terms, classes, and sections
+- **Student Management**: Comprehensive student information management
+- **Teacher Management**: Teacher profiles and subject assignments
+- **Attendance System**: Track student and teacher attendance
+- **Examination System**: Create and manage exams, record marks, and generate report cards
+- **Finance Module**: Fee management, payments, and financial reporting
+- **Real-time Updates**: Live data updates using Supabase's real-time capabilities
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
 
-## 🏗️ Architecture
+## Tech Stack
 
-- **Frontend**: Next.js 14 with TypeScript, Tailwind CSS, and shadcn/ui
-- **Backend**: NestJS with TypeScript, TypeORM, and PostgreSQL
-- **Database**: PostgreSQL with Redis for caching and job queues
-- **File Storage**: MinIO (development) / AWS S3 (production)
-- **Authentication**: JWT-based with refresh tokens
-- **API**: RESTful APIs with GraphQL support
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL, Auth, Storage, Functions)
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **Authentication**: Supabase Auth with JWT
+- **Deployment**: Vercel (Frontend), Supabase (Backend)
 
-## 📋 Prerequisites
+## Getting Started
 
-- Node.js 18+ (20+ recommended)
-- npm or yarn
-- Docker and Docker Compose
-- PostgreSQL 15+
-- Redis 7+
+### Prerequisites
 
-## 🛠️ Installation
+- Node.js 18+ and npm/yarn
+- Supabase account
 
-### 1. Clone the Repository
+### Installation
 
-```bash
-git clone <repository-url>
-cd Rex
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/edu-wise-basic.git
+   cd edu-wise-basic
+   ```
 
-### 2. Start Infrastructure Services
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-```bash
-docker-compose up -d
-```
+3. Create a `.env.local` file in the root directory with your Supabase credentials:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+   ```
 
-This will start:
-- PostgreSQL on port 5432
-- Redis on port 6379
-- MinIO on ports 9000 (API) and 9001 (Console)
+4. Run the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-### 3. Backend Setup
+5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-```bash
-cd backend
-
-# Install dependencies
-npm install
-
-# Copy environment file
-cp env.example .env
-
-# Edit .env with your configuration
-# Update database credentials, JWT secrets, etc.
-
-# Start the backend
-npm run start:dev
-```
-
-The backend will be available at `http://localhost:3001`
-
-### 4. Frontend Setup
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start the frontend
-npm run dev
-```
-
-The frontend will be available at `http://localhost:3000`
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Key environment variables to configure:
-
-- **Database**: `DB_URL`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
-- **Redis**: `REDIS_URL`, `REDIS_HOST`, `REDIS_PORT`
-- **JWT**: `JWT_SECRET`, `JWT_TTL`, `JWT_REFRESH_TTL`
-- **File Storage**: `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`, `S3_ENDPOINT`
-- **Email**: `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`
-- **SMS**: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`
-
-### Database Setup
-
-1. Create the database:
-```sql
-CREATE DATABASE eduwis_basic;
-CREATE USER eduwis_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE eduwis_basic TO eduwis_user;
-```
-
-2. The application will automatically create tables and run migrations in development mode.
-
-## 🚀 Development
-
-### Available Scripts
-
-**Backend:**
-```bash
-npm run start:dev      # Start in development mode
-npm run build          # Build the application
-npm run start:prod     # Start in production mode
-npm run test           # Run unit tests
-npm run test:e2e       # Run end-to-end tests
-npm run test:cov       # Run tests with coverage
-```
-
-**Frontend:**
-```bash
-npm run dev            # Start development server
-npm run build          # Build for production
-npm run start          # Start production server
-npm run lint           # Run ESLint
-npm run test           # Run tests
-```
-
-### Project Structure
+## Project Structure
 
 ```
-eduwis-basic/
-├── frontend/          # Next.js frontend application
-├── backend/           # NestJS backend API
-├── docs/              # Documentation and specifications
-├── docker-compose.yml # Development infrastructure
-└── README.md          # This file
+src/
+├── app/                  # Next.js App Router
+│   ├── (auth)/           # Authentication routes (login, register)
+│   ├── (dashboard)/      # Dashboard and protected routes
+│   └── layout.tsx        # Root layout
+├── components/           # Reusable components
+│   ├── ui/               # UI components (buttons, inputs, etc.)
+│   └── layouts/          # Layout components
+├── lib/                  # Utility functions and hooks
+│   ├── supabase/         # Supabase client configuration
+│   ├── hooks/            # Custom React hooks
+│   └── utils/            # Utility functions
+├── context/              # React context providers
+└── types/                # TypeScript type definitions
 ```
 
-## 📚 API Documentation
+## Database Schema
 
-The API is available at `/api/v1` with the following main endpoints:
+The application uses a PostgreSQL database with the following main tables:
 
-- **Auth**: `/auth/login`, `/auth/refresh`, `/auth/logout`
-- **Students**: `/students`, `/students/:id`
-- **Employees**: `/employees`, `/employees/:id`
-- **Academics**: `/exams`, `/marks`, `/timetable`
-- **Finance**: `/payments`, `/invoices`, `/fees`
-- **HR**: `/payroll`, `/attendance`, `/tasks`
+- `academic_years`: Academic year records
+- `terms`: Term/semester records
+- `classes`: Class/grade records
+- `sections`: Section records for each class
+- `subjects`: Subject records
+- `subject_assignments`: Teacher-subject-class assignments
+- `students`: Student records
+- `guardians`: Parent/guardian relationships
+- `employees`: Staff and teacher records
+- `attendance`: Attendance records
+- `exams`: Examination records
+- `marks`: Student marks/grades
+- `fees`: Fee structure records
+- `payments`: Payment records
 
-## 🔒 Security Features
+## Contributing
 
-- JWT-based authentication with refresh tokens
-- Role-based access control (RBAC)
-- Input validation and sanitization
-- Rate limiting and CORS protection
-- Helmet security headers
-- SQL injection prevention
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 🧪 Testing
+## License
 
-```bash
-# Backend tests
-cd backend
-npm run test
-npm run test:e2e
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-# Frontend tests
-cd frontend
-npm run test
-```
-
-## 📦 Deployment
-
-### Production Environment
-
-1. Set `NODE_ENV=production`
-2. Use managed PostgreSQL and Redis services
-3. Configure production file storage (AWS S3, etc.)
-4. Set up proper SSL certificates
-5. Configure monitoring and logging
-
-### Docker Deployment
-
-```bash
-# Build and run with Docker
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the repository
-- Check the documentation in the `docs/` folder
-- Review the API specifications
-
-## 🔄 Roadmap
-
-- [ ] Phase 1: Core Foundation (Authentication, Basic CRUD)
-- [ ] Phase 2: Academic Features (Exams, Results, Promotions)
-- [ ] Phase 3: Finance & HR (Payments, Payroll)
-- [ ] Phase 4: Advanced Features (ML, Mobile Apps)
-
----
-
-**Built with ❤️ for educational institutions**

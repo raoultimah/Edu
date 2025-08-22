@@ -1,51 +1,17 @@
 version: '3.8'
-
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: eduwis-postgres
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
     environment:
-      POSTGRES_DB: eduwis_basic
-      POSTGRES_USER: eduwis_user
-      POSTGRES_PASSWORD: eduwis_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/init:/docker-entrypoint-initdb.d
-    networks:
-      - eduwis-network
+      - NODE_ENV=development
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    command: npm run dev
 
-  redis:
-    image: redis:7-alpine
-    container_name: eduwis-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - eduwis-network
-
-  minio:
-    image: minio/minio:latest
-    container_name: eduwis-minio
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    command: server /data --console-address ":9001"
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
-    networks:
-      - eduwis-network
-
-volumes:
-  postgres_data:
-  redis_data:
-  minio_data:
-
-networks:
-  eduwis-network:
-    driver: bridge
