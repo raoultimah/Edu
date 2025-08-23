@@ -1,0 +1,25 @@
+{
+  "name": "edu-wise-basic-backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "setup": "node scripts/run-all-setup.js",
+    "setup:schema": "node scripts/create-schema.js",
+    "setup:functions": "node scripts/create-sql-functions.js",
+    "setup:procedures": "node scripts/create-stored-procedure.js",
+    "setup:auth": "node scripts/setup-auth.js",
+    "setup:sample-data": "node scripts/create-sample-data.js",
+    "setup:database": "node scripts/setup-database.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^17.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "nodemon": "^3.0.1"
+  }
+}
+
