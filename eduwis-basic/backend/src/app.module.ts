@@ -7,30 +7,24 @@ import { StudentsModule } from './students/students.module';
 
 @Module({
   imports: [
-    // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.local', '.env'],
     }),
-    
-    // Database
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get('POSTGRES_HOST', 'localhost'),
-        port: configService.get('POSTGRES_PORT', 5432),
-        username: configService.get('POSTGRES_USER', 'postgres'),
-        password: configService.get('POSTGRES_PASSWORD', 'postgres'),
-        database: configService.get('POSTGRES_DB', 'eduwis_basic'),
+        host: configService.get('POSTGRES_HOST'),
+        port: configService.get('POSTGRES_PORT'),
+        username: configService.get('POSTGRES_USER'),
+        password: configService.get('POSTGRES_PASSWORD'),
+        database: configService.get('POSTGRES_DB'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get('NODE_ENV') !== 'production',
-        logging: configService.get('NODE_ENV') !== 'production',
+        ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
       }),
     }),
-    
-    // Feature modules
     AuthModule,
     UsersModule,
     StudentsModule,

@@ -1,7 +1,7 @@
 {
   "name": "eduwis-basic-backend",
   "version": "0.1.0",
-  "description": "Backend API for EDU-WISE BASIC school management system",
+  "description": "EDU-WISE BASIC Backend",
   "author": "",
   "private": true,
   "license": "MIT",
@@ -32,7 +32,6 @@
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
-    "dotenv": "^16.3.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.11.3",
