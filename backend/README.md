@@ -4,6 +4,11 @@ This directory contains the backend components for the EDU-WISE BASIC school man
 
 ## Contents
 
+- **src/**: Source code for the backend application
+  - `controllers/`: Business logic controllers
+  - `utils/`: Utility functions and helpers
+  - `index.js`: Main entry point
+
 - **scripts/**: Database setup and initialization scripts
   - `create-schema.js`: Creates the database tables and relationships
   - `create-sample-data.js`: Populates the database with sample data
@@ -38,8 +43,16 @@ This will:
 - Create stored procedures
 - Populate the database with sample data
 
+4. **Start the backend**
+
+```bash
+npm start
+```
+
 ## Available Scripts
 
+- `npm start`: Start the backend server
+- `npm run dev`: Start the backend in development mode
 - `npm run setup`: Run all setup scripts
 - `npm run setup:schema`: Create database schema
 - `npm run setup:functions`: Create SQL helper functions
